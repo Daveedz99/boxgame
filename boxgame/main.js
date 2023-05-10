@@ -7,27 +7,59 @@ const GAME_BONUSES = 4;
 class Boxgame extends Phaser.Scene {
   constructor() {
     super();
+    this.bonuses = [];
   }
 
   preload() {
     // IMAGES
     this.load.image("background", "assets/background.png");
-    this.load.image("present", "assets/present.png");
-    // this.load.spritesheet("presents", "assets/presents.png", {
-    //   frameWidth: 80,
-    //   frameHeight: 80,
-    // });
-    this.load.spritesheet("explosion", "assets/sprites/boom.png", {
-      frameWidth: 50,
-      frameHeight: 50,
+    // SPRITESHEETS
+    this.load.spritesheet("present", "assets/sprites/present-animation.png", {
+      frameWidth: 150,
+      frameHeight: 150,
+      endFrame: 12,
     });
+    this.load.spritesheet("present-hover", "assets/sprites/present-hover.png", {
+      frameWidth: 150,
+      frameHeight: 150,
+      endFrame: 44,
+    });
+    this.load.spritesheet("explosion", "assets/sprites/boom.png", {
+      frameWidth: 100,
+      frameHeight: 90,
+      endFrame: 4,
+    });
+    // PARTICLES
     this.load.image("red", "https://labs.phaser.io/assets/particles/red.png");
     // AUDIO
     this.load.audio("ping", "assets/audio/p-ping.mp3");
   }
 
   create() {
+    // Background
     this.add.image(400, 300, "background");
+
+    // Present animation
+    this.anims.create({
+      key: "present-animation",
+      frames: "present",
+      frameRate: 10,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: "present-hover",
+      frames: "present-hover",
+      frameRate: 20,
+      repeat: -1,
+    });
+
+    // Boom animation
+    this.anims.create({
+      key: "explosion-animation",
+      frames: "explosion",
+      frameRate: 10,
+    });
+
     // Ping sound
     const ping = this.sound.add("ping");
 
@@ -37,49 +69,51 @@ class Boxgame extends Phaser.Scene {
     for (let i = 0; i < GAME_BONUSES; i++) {
       x += margin;
       let y = Phaser.Math.Between(200, 425);
+      let box = this.physics.add
+        .sprite(x, y)
+        .play("present-animation")
+        .setVelocityY(50)
+        .setDragY(200);
 
-      let box = this.add.sprite(x, y, "present");
+      // physics options test
+      // box.setCollideWorldBounds(true);
+      // box.setCircle(42, 34, 44);
+      // box.setBounce(1);
+      // box.setVelocity(100, 60);
+
       box.setDepth(1);
-      // this.graphics = this.add.graphics({ lineStyle: { width: 4, color: 0xaa00aa } });
-      // this.line = new Phaser.Geom.Line(300, 300, 400, 300);
-
-      let particles;
 
       //  Make them all input enabled
       box.setInteractive({ cursor: "pointer" });
-
+      let particles;
       //  The images will dispatch a 'clicked' event when they are clicked on
       box.on("clicked", () => {
         this.clickHandler(box, ping, particles);
       });
       // Pointer over event
       box.on("pointerover", () => {
+        // Effetto hover box
+        box.play("present-hover");
         // Effetto particelle inizia nascosto in posizione dell'elemento
-        particles = this.add.particles(box.x, box.y, "red", {
+        particles = this.add.particles(box.x, box.y + 25, "red", {
           angle: { min: 0, max: 180 },
-          speed: 70,
-          scale: { start: 0.4, end: 0.3 },
+          speed: 75,
+          scale: { start: 0.1, end: 0.1 },
           blendMode: "ADD",
         });
       });
       // Pointer out event
       box.on("pointerout", () => {
+        box.play("present-animation");
         particles.explode();
       });
 
+      this.bonuses.push(box);
       bonuses++;
     }
 
-    // Creo animazione explode
-    this.anims.create({
-      key: "explode",
-      frames: this.anims.generateFrameNumbers("explosion", {
-        start: 0,
-        end: 4,
-      }),
-      frameRate: 4,
-      repeat: 0,
-    });
+    // physics options test
+    // this.physics.add.collider(this.bonuses);
 
     //  If a Game Object is clicked on, this event is fired.
     //  We can use it to emit the 'clicked' event on the game object itself.
@@ -91,19 +125,26 @@ class Boxgame extends Phaser.Scene {
       this
     );
 
-    //  Display bonus rimanenti
+    // Display bonus rimanenti
     info = this.add
       .text(10, 10, "", { font: "32px Arial", fill: "#fff" })
       .setVisible(true);
   }
 
   update() {
-    info.setText("Bonus restanti: " + bonuses);
+    info.setText("Bonus restanti: " + bonuses); // TODO QUI ???
   }
 
   clickHandler(box, ping, particles) {
     // PLAY SUONO E GESTIONE LAST BONUS
-    // box.play("explode"); todo
+
+    if (this.dragActive === true) {
+      return;
+    }
+    const boom = this.add.sprite(box.x, box.y).play("explosion-animation");
+    boom.on("animationcomplete", () => {
+      boom.visible = false;
+    });
     ping.play();
     if (bonuses === 1) this.gameOver();
     bonuses--;
@@ -113,7 +154,7 @@ class Boxgame extends Phaser.Scene {
     particles.explode(50);
   }
 
-  // hoverHandlerOver(box) {
+  // hoverHandlerOver(box) { davide
   //   // TODO SETFRAME ( SWITCH FRAME X ANIMAZIONE )
   // }
 
@@ -143,11 +184,19 @@ const config = {
   type: Phaser.AUTO,
   scene: [Boxgame],
   scale: {
+    // Responsive scaling
     mode: Phaser.Scale.FIT,
     parent: "present-game",
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
+  },
+  physics: {
+    default: "arcade",
+    arcade: {
+      // debug: true,
+      gravity: { y: 50 },
+    },
   },
 };
 
