@@ -3,11 +3,13 @@ let bonuses = 0;
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
 const GAME_BONUSES = 4;
+const GAME_ANIMATION_TIME = 4000;
 
 class Boxgame extends Phaser.Scene {
   constructor() {
     super();
     this.bonuses = [];
+    this.oldIndexBonusAnimated = 1;
   }
 
   preload() {
@@ -17,17 +19,17 @@ class Boxgame extends Phaser.Scene {
     this.load.spritesheet("present", "assets/sprites/present-animation.png", {
       frameWidth: 150,
       frameHeight: 150,
-      endFrame: 12,
+      endFrame: 40,
     });
     this.load.spritesheet("present-hover", "assets/sprites/present-hover.png", {
       frameWidth: 150,
       frameHeight: 150,
-      endFrame: 44,
+      endFrame: 40,
     });
     this.load.spritesheet("explosion", "assets/sprites/boom.png", {
-      frameWidth: 100,
-      frameHeight: 90,
-      endFrame: 4,
+      frameWidth: 150,
+      frameHeight: 150,
+      endFrame: 20,
     });
     // PARTICLES
     this.load.image("red", "https://labs.phaser.io/assets/particles/red.png");
@@ -38,18 +40,20 @@ class Boxgame extends Phaser.Scene {
   create() {
     // Background
     this.add.image(400, 300, "background");
+    // Ping sound
+    const ping = this.sound.add("ping");
 
     // Present animation
     this.anims.create({
       key: "present-animation",
       frames: "present",
-      frameRate: 10,
+      frameRate: 30,
       repeat: -1,
     });
     this.anims.create({
       key: "present-hover",
       frames: "present-hover",
-      frameRate: 20,
+      frameRate: 30,
       repeat: -1,
     });
 
@@ -57,60 +61,63 @@ class Boxgame extends Phaser.Scene {
     this.anims.create({
       key: "explosion-animation",
       frames: "explosion",
-      frameRate: 10,
+      frameRate: 30,
     });
-
-    // Ping sound
-    const ping = this.sound.add("ping");
 
     //  Create a bunch of images
     let margin = 160;
     let x = 0;
+    //  TODO IL CICLO GIRA SU GAME BONUSES, DOVREBBE GIRARE SUI BOX
     for (let i = 0; i < GAME_BONUSES; i++) {
       x += margin;
-      let y = Phaser.Math.Between(200, 425);
+      let y = Phaser.Math.Between(190, 415);
       let box = this.physics.add
-        .sprite(x, y)
-        .play("present-animation")
-        .setVelocityY(50)
-        .setDragY(200);
-
+        .sprite(x, y, 'present')
+        .setVelocityY(35)
+        .setDragY(70)
+        .setDepth(1);
       // physics options test
       // box.setCollideWorldBounds(true);
       // box.setCircle(42, 34, 44);
       // box.setBounce(1);
-      // box.setVelocity(100, 60);
+      // box.setVelocity(150, 60);
 
-      box.setDepth(1);
 
       //  Make them all input enabled
       box.setInteractive({ cursor: "pointer" });
-      let particles;
+      // let particles;
       //  The images will dispatch a 'clicked' event when they are clicked on
       box.on("clicked", () => {
-        this.clickHandler(box, ping, particles);
+        this.clickHandler(box, ping);
       });
       // Pointer over event
       box.on("pointerover", () => {
         // Effetto hover box
-        box.play("present-hover");
+        box.play("present-hover")
+            // .once('animationcomplete', () => {
+            //   alert('tiamo')
+            // })
+
         // Effetto particelle inizia nascosto in posizione dell'elemento
-        particles = this.add.particles(box.x, box.y + 25, "red", {
-          angle: { min: 0, max: 180 },
-          speed: 75,
-          scale: { start: 0.1, end: 0.1 },
-          blendMode: "ADD",
-        });
+        // particles = this.add.particles(box.x, box.y + 25, "red", {
+        //   angle: { min: 70, max: 90 },
+        //   speed: 75,
+        //   scale: { start: 0.1, end: 0.1 },
+        //   blendMode: "ADD",
+        // });
       });
       // Pointer out event
       box.on("pointerout", () => {
-        box.play("present-animation");
-        particles.explode();
+        // particles.explode();
       });
 
       this.bonuses.push(box);
       bonuses++;
     }
+    // init random animation
+
+    this.doAnimateRandomElement()
+
 
     // physics options test
     // this.physics.add.collider(this.bonuses);
@@ -132,18 +139,14 @@ class Boxgame extends Phaser.Scene {
   }
 
   update() {
-    info.setText("Bonus restanti: " + bonuses); // TODO QUI ???
+    info.setText("Bonus restanti: " + bonuses);
   }
 
-  clickHandler(box, ping, particles) {
+  clickHandler(box, ping) {
     // PLAY SUONO E GESTIONE LAST BONUS
-
-    if (this.dragActive === true) {
-      return;
-    }
     const boom = this.add.sprite(box.x, box.y).play("explosion-animation");
     boom.on("animationcomplete", () => {
-      boom.visible = false;
+      boom.destroy();
     });
     ping.play();
     if (bonuses === 1) this.gameOver();
@@ -151,7 +154,25 @@ class Boxgame extends Phaser.Scene {
     box.off("clicked", this.clickHandler);
     box.input.enabled = false;
     box.setVisible(false);
-    particles.explode(50);
+    // particles.explode(50);
+  }
+
+  doAnimateRandomElement() {
+    setInterval(() => {
+      // Stop animations
+      // this.bonuses.forEach(bonus => { todo
+      //   if (bonus.anims.key === 'present-animation'){
+      //     bonus.pause("present-animation")
+      //   }
+      // })
+      let boxToAnimate;
+      // Random pick inside bonus array
+      do {
+        boxToAnimate = Phaser.Math.Between(0, GAME_BONUSES - 1)
+      } while (boxToAnimate === this.oldIndexBonusAnimated)
+      this.oldIndexBonusAnimated = boxToAnimate;
+      this.bonuses[boxToAnimate].play("present-animation")
+    }, GAME_ANIMATION_TIME)
   }
 
   // hoverHandlerOver(box) { davide
@@ -169,7 +190,10 @@ class Boxgame extends Phaser.Scene {
     this.add.text(
       50,
       250,
-      "Bonus terminati.. torna a trovarci prossimamente!",
+        `Bonus terminati :D
+        
+        torna a trovarci prossimamente!
+            `,
       {
         font: "32px Arial",
         fill: "#fff",
