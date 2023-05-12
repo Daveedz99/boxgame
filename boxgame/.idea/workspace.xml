@@ -64,7 +64,7 @@
       <updated>1683711985731</updated>
       <workItem from="1683711986735" duration="15170000" />
       <workItem from="1683736845555" duration="3422000" />
-      <workItem from="1683881763053" duration="3654000" />
+      <workItem from="1683881763053" duration="4275000" />
     </task>
     <task id="LOCAL-00001" summary="Upgrades present game">
       <created>1683740071203</created>
@@ -87,7 +87,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683740197419</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Upgrades present game">
+      <created>1683901448701</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1683901448701</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
