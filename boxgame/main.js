@@ -95,7 +95,6 @@ class Boxgame extends Phaser.Scene {
         // Effetto hover box
         box.play("present-hover")
             // .once('animationcomplete', () => {
-            //   alert('tiamo')
             // })
 
         // Effetto particelle inizia nascosto in posizione dell'elemento
@@ -158,6 +157,7 @@ class Boxgame extends Phaser.Scene {
   }
 
   doAnimateRandomElement() {
+    this.bonuses.forEach(bonus => bonus.stop())
     setInterval(() => {
       // Stop animations
       // this.bonuses.forEach(bonus => { todo
