@@ -64,7 +64,9 @@
       <updated>1683711985731</updated>
       <workItem from="1683711986735" duration="15170000" />
       <workItem from="1683736845555" duration="3422000" />
-      <workItem from="1683881763053" duration="4275000" />
+      <workItem from="1683881763053" duration="4365000" />
+      <workItem from="1684141655184" duration="13218000" />
+      <workItem from="1684169500059" duration="772000" />
     </task>
     <task id="LOCAL-00001" summary="Upgrades present game">
       <created>1683740071203</created>
@@ -94,11 +96,29 @@
       <option name="project" value="LOCAL" />
       <updated>1683901448701</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Upgrades present game">
+      <created>1683901455621</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1683901455621</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Upgrades present game" />

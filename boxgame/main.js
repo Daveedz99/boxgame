@@ -53,8 +53,7 @@ class Boxgame extends Phaser.Scene {
     this.anims.create({
       key: "present-hover",
       frames: "present-hover",
-      frameRate: 30,
-      repeat: -1,
+      frameRate: 35,
     });
 
     // Boom animation
@@ -72,7 +71,7 @@ class Boxgame extends Phaser.Scene {
       x += margin;
       let y = Phaser.Math.Between(190, 415);
       let box = this.physics.add
-        .sprite(x, y, 'present')
+        .sprite(x, y, "present")
         .setVelocityY(35)
         .setDragY(70)
         .setDepth(1);
@@ -82,41 +81,33 @@ class Boxgame extends Phaser.Scene {
       // box.setBounce(1);
       // box.setVelocity(150, 60);
 
-
       //  Make them all input enabled
       box.setInteractive({ cursor: "pointer" });
-      // let particles;
       //  The images will dispatch a 'clicked' event when they are clicked on
       box.on("clicked", () => {
         this.clickHandler(box, ping);
       });
       // Pointer over event
       box.on("pointerover", () => {
+        if (
+          box.anims.isPlaying &&
+          box.anims.currentAnim.key === "present-hover"
+        ) {
+          return;
+        }
+        box.play("present-hover");
         // Effetto hover box
-        box.play("present-hover")
-            // .once('animationcomplete', () => {
-            // })
-
-        // Effetto particelle inizia nascosto in posizione dell'elemento
-        // particles = this.add.particles(box.x, box.y + 25, "red", {
-        //   angle: { min: 70, max: 90 },
-        //   speed: 75,
-        //   scale: { start: 0.1, end: 0.1 },
-        //   blendMode: "ADD",
-        // });
       });
       // Pointer out event
       box.on("pointerout", () => {
-        // particles.explode();
+        // box.playReverse("present-hover")
       });
 
       this.bonuses.push(box);
       bonuses++;
     }
     // init random animation
-
-    this.doAnimateRandomElement()
-
+    this.doAnimateRandomElement();
 
     // physics options test
     // this.physics.add.collider(this.bonuses);
@@ -153,33 +144,27 @@ class Boxgame extends Phaser.Scene {
     box.off("clicked", this.clickHandler);
     box.input.enabled = false;
     box.setVisible(false);
-    // particles.explode(50);
   }
 
   doAnimateRandomElement() {
-    this.bonuses.forEach(bonus => bonus.stop())
     setInterval(() => {
-      // Stop animations
-      // this.bonuses.forEach(bonus => { todo
-      //   if (bonus.anims.key === 'present-animation'){
-      //     bonus.pause("present-animation")
-      //   }
-      // })
-      let boxToAnimate;
+      this.bonuses.forEach((bonus) => {
+        if (
+          bonus.anims.isPlaying &&
+          bonus.anims.currentAnim.key === "present-animation"
+        ) {
+          bonus.anims.stop("present-animation");
+        }
+      });
       // Random pick inside bonus array
+      let indexBoxToAnimate;
       do {
-        boxToAnimate = Phaser.Math.Between(0, GAME_BONUSES - 1)
-      } while (boxToAnimate === this.oldIndexBonusAnimated)
-      this.oldIndexBonusAnimated = boxToAnimate;
-      this.bonuses[boxToAnimate].play("present-animation")
-    }, GAME_ANIMATION_TIME)
+        indexBoxToAnimate = Phaser.Math.Between(0, GAME_BONUSES - 1);
+      } while (indexBoxToAnimate === this.oldIndexBonusAnimated);
+      this.oldIndexBonusAnimated = indexBoxToAnimate;
+      this.bonuses[indexBoxToAnimate].play("present-animation");
+    }, GAME_ANIMATION_TIME);
   }
-
-  // hoverHandlerOver(box) { davide
-  //   // TODO SETFRAME ( SWITCH FRAME X ANIMAZIONE )
-  // }
-
-  // hoverHandlerOut(box) {}
 
   gameOver() {
     // Disegno velo trasparente
@@ -190,7 +175,7 @@ class Boxgame extends Phaser.Scene {
     this.add.text(
       50,
       250,
-        `Bonus terminati :D
+      `Bonus terminati :D
         
         torna a trovarci prossimamente!
             `,
