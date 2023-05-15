@@ -31,8 +31,6 @@ class Boxgame extends Phaser.Scene {
       frameHeight: 150,
       endFrame: 20,
     });
-    // PARTICLES
-    this.load.image("red", "https://labs.phaser.io/assets/particles/red.png");
     // AUDIO
     this.load.audio("ping", "assets/audio/p-ping.mp3");
   }
@@ -70,7 +68,7 @@ class Boxgame extends Phaser.Scene {
     for (let i = 0; i < GAME_BONUSES; i++) {
       x += margin;
       let y = Phaser.Math.Between(190, 415);
-      let box = this.physics.add
+      let bonus = this.physics.add
         .sprite(x, y, "present")
         .setVelocityY(35)
         .setDragY(70)
@@ -82,28 +80,26 @@ class Boxgame extends Phaser.Scene {
       // box.setVelocity(150, 60);
 
       //  Make them all input enabled
-      box.setInteractive({ cursor: "pointer" });
+      bonus.setInteractive({ cursor: "pointer" });
       //  The images will dispatch a 'clicked' event when they are clicked on
-      box.on("clicked", () => {
-        this.clickHandler(box, ping);
+      bonus.on("clicked", () => {
+        this.clickHandler(bonus, ping);
       });
       // Pointer over event
-      box.on("pointerover", () => {
+      bonus.on("pointerover", () => {
         if (
-          box.anims.isPlaying &&
-          box.anims.currentAnim.key === "present-hover"
+          bonus.anims.isPlaying &&
+          bonus.anims.currentAnim.key === "present-hover"
         ) {
           return;
         }
-        box.play("present-hover");
+        bonus.play("present-hover");
         // Effetto hover box
       });
       // Pointer out event
-      box.on("pointerout", () => {
-        // box.playReverse("present-hover")
-      });
+      bonus.on("pointerout", () => {});
 
-      this.bonuses.push(box);
+      this.bonuses.push(bonus);
       bonuses++;
     }
     // init random animation
@@ -134,16 +130,16 @@ class Boxgame extends Phaser.Scene {
 
   clickHandler(box, ping) {
     // PLAY SUONO E GESTIONE LAST BONUS
+    bonuses--;
+    ping.play();
     const boom = this.add.sprite(box.x, box.y).play("explosion-animation");
     boom.on("animationcomplete", () => {
       boom.destroy();
     });
-    ping.play();
-    if (bonuses === 1) this.gameOver();
-    bonuses--;
     box.off("clicked", this.clickHandler);
     box.input.enabled = false;
     box.setVisible(false);
+    this.gameOver();
   }
 
   doAnimateRandomElement() {
@@ -167,23 +163,33 @@ class Boxgame extends Phaser.Scene {
   }
 
   gameOver() {
+    this.scene.pause();
+    // Disabilito tutti gli eventi
+    this.bonuses.forEach((bonus) => {
+      bonus.stop();
+      bonus.disableInteractive();
+    });
     // Disegno velo trasparente
     this.veil = this.add.graphics({ x: 0, y: 0 });
-    this.veil.fillStyle("0x00000", 0.75);
+    this.veil.fillStyle("0x00000", 0.92);
     this.veil.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-    this.add.text(
-      50,
-      250,
-      `Bonus terminati :D
-        
-        torna a trovarci prossimamente!
-            `,
+    this.veil.setDepth(2);
+    // WIN TEXT
+    const marginX = 300;
+    const marginY = 100;
+    const winText = this.add.text(
+      GAME_WIDTH / 2 - marginX,
+      GAME_HEIGHT / 2 - marginY,
+      `CONGRATULAZIONI HAI VINTO: NULLA 
+      
+             Torna a trovarci domani`,
       {
         font: "32px Arial",
         fill: "#fff",
       }
     );
+    winText.setDepth(2);
+
     info.setVisible(false);
     this.input.off("gameobjectup");
   }
